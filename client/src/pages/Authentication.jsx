@@ -1,13 +1,27 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 import { AuthBG } from "../assets";
 import { FcBusinesswoman, FcGoogle } from "react-icons/fc";
 import { GoogleAuthProvider, signInWithRedirect } from "firebase/auth";
 import { auth } from "../config/firebase.config";
+import useUser from "../hooks/user/useUser";
+import { useNavigate } from "react-router-dom";
 
 const Authentication = () => {
   const googleProvider = new GoogleAuthProvider();
 
-  const handleSigninWithGoogle = useCallback(async () => {
+  const { data: user, isError, isLoading, refetch } = useUser();
+  const navigate = useNavigate();
+  useEffect(() => {
+    if (!isLoading && user) {
+      navigate("/", { replace: true });
+    }
+  }, [isLoading, user]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  const handleSigninWithGoogle = async () => {
     try {
       const cred = await signInWithRedirect(auth, googleProvider);
       if (cred) {
@@ -16,7 +30,7 @@ const Authentication = () => {
     } catch (error) {
       console.error("Login fail", error);
     }
-  }, []);
+  };
 
   return (
     <div
